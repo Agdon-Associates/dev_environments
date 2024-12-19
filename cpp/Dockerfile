@@ -1,7 +1,7 @@
 # Base image
 
 ARG VARIANT="focal"
-FROM mcr.microsoft.com/vscode/devcontainers/cpp:0-$(VARIANT)
+FROM mcr.microsoft.com/vscode/devcontainers/cpp:0-${VARIANT}
 
 # Development tools
 
