@@ -1,6 +1,6 @@
 # Base image
 
-ARG VARIANT="focal"
+ARG VARIANT="noble"
 FROM mcr.microsoft.com/vscode/devcontainers/cpp:0-${VARIANT}
 
 # Development tools
