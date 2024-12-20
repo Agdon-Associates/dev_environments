@@ -45,3 +45,8 @@ RUN make all-gcc
 RUN make all-target-libgcc
 RUN make install-gcc
 RUN make install-target-libgcc
+
+# install a few additional packages
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends \
+    qemu-system-x86
