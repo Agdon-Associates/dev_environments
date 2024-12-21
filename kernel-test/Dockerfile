@@ -14,7 +14,11 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     nasm \
     grub-efi \
     xorriso \
-    mtools
+    mtools \
+    qemu-system-x86 \
+    && apt-get -y autoremove \
+    && apt-get -y clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install binutils
 WORKDIR /tmp
@@ -30,6 +34,8 @@ RUN ./configure --target=${TARGET} --prefix=${PREFIX} \
     --with-sysroot --disable-nls --disable-werror
 RUN make
 RUN make install
+WORKDIR /tmp
+RUN rm -rf binutils
 
 # Build gcc for cross-compilation
 WORKDIR /tmp
@@ -45,8 +51,5 @@ RUN make all-gcc
 RUN make all-target-libgcc
 RUN make install-gcc
 RUN make install-target-libgcc
-
-# install a few additional packages
-RUN export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-    qemu-system-x86
+WORKDIR /tmp
+RUN rm -rf gcc
