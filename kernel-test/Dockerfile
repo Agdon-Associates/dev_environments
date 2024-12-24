@@ -1,4 +1,4 @@
-FROM agdon01/dev_environments:cpp
+FROM agdon01/dev_environments:cpp as CPP
 
 # Install additional base packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
@@ -53,3 +53,5 @@ RUN make install-gcc
 RUN make install-target-libgcc
 WORKDIR /tmp
 RUN rm -rf gcc
+
+FROM CPP
