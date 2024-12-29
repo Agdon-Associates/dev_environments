@@ -1,4 +1,4 @@
-FROM agdon01/dev_environments:cpp as cppbase
+FROM agdon01/dev_environments:cpp AS cppbase
 
 # Install additional base packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
@@ -22,36 +22,66 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 
 # Install binutils
 WORKDIR /tmp
-RUN git clone git://sourceware.org/git/binutils-gdb.git binutils
-WORKDIR /tmp/binutils
 
-# Configure binutils to build for the i686-elf target architecture
+RUN <<EOF
+  git clone git://sourceware.org/git/binutils-gdb.git binutils
+  git clone git://gcc.gnu.org/git/gcc.git
+EOF
+
 ARG PREFIX="/opt/gcc-i686/cross"
 ARG TARGET="i686-elf"
 ARG PATH="${PREFIX}/bin:$PATH"
-RUN mkdir -p ${PREFIX}
-RUN ./configure --target=${TARGET} --prefix=${PREFIX} \
+
+RUN <<EOF
+  cd /tmp/binutils
+
+# Configure binutils to build for the i686-elf target architecture
+  mkdir -p ${PREFIX}
+  ./configure --target=${TARGET} --prefix=${PREFIX} \
     --with-sysroot --disable-nls --disable-werror
-RUN make
-RUN make install
-WORKDIR /tmp
-RUN rm -rf binutils
+  make
+  make install
+  cd /tmp
+  #rm -rf binutils
+EOF
 
 # Build gcc for cross-compilation
-WORKDIR /tmp
-RUN git clone git://gcc.gnu.org/git/gcc.git
-WORKDIR /tmp/gcc
-RUN ./contrib/download_prerequisites
-WORKDIR /tmp
-RUN mkdir build-gcc
-WORKDIR /tmp/build-gcc
-RUN ../gcc/configure --target=${TARGET} --prefix="${PREFIX}" \
+RUN <<EOF
+  
+  cd /tmp/gcc
+  ./contrib/download_prerequisites
+  cd /tmp
+  mkdir build-gcc
+  cd /tmp/build-gcc
+  ../gcc/configure --target=${TARGET} --prefix="${PREFIX}" \
     --disable-nls --enable-languages=c,c++ --without-headers
-RUN make all-gcc
-RUN make all-target-libgcc
-RUN make install-gcc
-RUN make install-target-libgcc
-WORKDIR /tmp
-RUN rm -rf gcc
+  make all-gcc
+  make all-target-libgcc
+  make install-gcc
+  make install-target-libgcc
+  cd /tmp
+  #rm -rf gcc
+EOF
 
-FROM cppbase
+FROM agdon01/dev_environments:cpp
+
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends \
+    build-essential \
+    bison \
+    flex \
+    libgmp3-dev \
+    libmpc-dev \
+    libmpfr-dev \
+    texinfo \
+    libisl-dev \
+    nasm \
+    grub-efi \
+    xorriso \
+    mtools \
+    qemu-system-x86 \
+    && apt-get -y autoremove \
+    && apt-get -y clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=cppbase /opt /opt
