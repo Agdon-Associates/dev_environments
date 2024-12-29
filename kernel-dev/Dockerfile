@@ -1,4 +1,4 @@
-FROM agdon01/dev_environments:cpp AS cppbase
+FROM agdon01/dev_environments:cpp
 
 # Install additional base packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
